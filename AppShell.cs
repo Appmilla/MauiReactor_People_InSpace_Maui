@@ -1,26 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using MauiReactor;
 using MauiReactorPeopleInSpace.Pages;
 
 namespace MauiReactorPeopleInSpace;
 
 class AppShell : Component
-{
-    public override VisualNode Render()
-        => Shell(
-            FlyoutItem("MainPage",
-                ShellContent()
-                    .Title("MainPage")
-                    .RenderContent(() => new MainPage())
-            ),
-            FlyoutItem("OtherPage",
-                ShellContent()
-                    .Title("OtherPage")
-                    .RenderContent(() => new OtherPage())
-            )
-        );
+{  
+    private const string MainPageName = "MainPage";
+    
+    private MauiControls.Shell? _shell;
+    
+    protected override void OnMounted()
+    {
+        Routing.RegisterRoute<MainPage>(nameof(MainPage));
+        Routing.RegisterRoute<DetailPage>(nameof(DetailPage));
+
+        base.OnMounted();
+    }
+    
+    public override VisualNode Render() =>
+            new Shell(x => _shell = x!)
+                {
+                    new ShellContent(MainPageName)
+                        .AutomationId(MainPageName)
+                        .Title(MainPageName)
+                        .Route(MainPageName)
+                        .RenderContent(() => new MainPage().Shell(_shell))
+                }
+                .AutomationId("MainShell");
 }
