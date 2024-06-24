@@ -1,16 +1,17 @@
+using System;
 using System.Threading.Tasks;
-
+using MauiReactor;
 namespace MauiReactorPeopleInSpace.Navigation;
 
 public interface INavigationService
 {
-    Task NavigateAsync(string route);
+    Task NavigateAsync<P>(string route, Action<P> propsInitializer) where P : new();
 }
 
 public class NavigationService : INavigationService
 {
-    public async Task NavigateAsync(string route)
+    public async Task NavigateAsync<P>(string route, Action<P> propsInitializer) where P : new()
     {
-        await MauiControls.Shell.Current.GoToAsync(route);
+        await MauiControls.Shell.Current.GoToAsync<P>(route, propsInitializer);
     }
 }

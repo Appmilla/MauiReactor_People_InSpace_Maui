@@ -114,7 +114,7 @@ public partial class MainPage : Component<MainPageState>
     
     private async Task NavigateToDetail(CrewModel crewMember)
     {
-        await shellRef!.GoToAsync<DetailPageProps>(
+        await _navigationService.NavigateAsync<DetailPageProps>(
             "DetailPage",
             props =>
             {
@@ -123,4 +123,17 @@ public partial class MainPage : Component<MainPageState>
                 props.Wikipedia = crewMember.Wikipedia;
             });
     }
+    
+    /*
+    private async Task NavigateToDetail(CrewModel crewMember)
+    {
+        await shellRef!.GoToAsync<DetailPageProps>(
+            "DetailPage",
+            props =>
+            {
+                props.Name = crewMember.Name;
+                props.Image = crewMember.Image;
+                props.Wikipedia = crewMember.Wikipedia;
+            });
+    }*/
 }
