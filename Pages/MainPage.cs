@@ -8,7 +8,6 @@ using MauiReactorPeopleInSpace.Models;
 using MauiReactorPeopleInSpace.Navigation;
 using MauiReactorPeopleInSpace.Reactive;
 using MauiReactorPeopleInSpace.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MauiReactorPeopleInSpace.Pages;
 
@@ -21,30 +20,34 @@ public class MainPageState
 
 public partial class MainPage : Component<MainPageState>
 {
-    private readonly ISchedulerProvider _schedulerProvider;
-    private readonly ICrewRepository _crewRepository;
-    private readonly INavigationService _navigationService;
+    private IDisposable? _refreshSubscription;
 
-    [Prop("Shell")] protected MauiControls.Shell? shellRef;
+    [Inject] private ISchedulerProvider _schedulerProvider;
+    [Inject] private ICrewRepository _crewRepository;
+    [Inject] private INavigationService _navigationService;
     
-    public MainPage()
-    {
-        _schedulerProvider = Services.GetRequiredService<ISchedulerProvider>();
-        _crewRepository = Services.GetRequiredService<ICrewRepository>();
-        _navigationService = Services.GetRequiredService<INavigationService>();
-    }
-
+    [Prop("Shell")] protected MauiControls.Shell? ShellRef;
+    
     protected override void OnMounted()
     {
         LoadCrew(false);
         base.OnMounted();
     }
-
+    
+    protected override void OnWillUnmount()
+    {
+        base.OnWillUnmount();
+        
+        _refreshSubscription?.Dispose();
+    }
+    
     private void LoadCrew(bool forceRefresh)
     {
-        State.IsRefreshing = true;
+        _refreshSubscription?.Dispose();
+        
+        SetState(_ => _.IsRefreshing = true);
 
-        _crewRepository.GetCrew(forceRefresh)
+        _refreshSubscription = _crewRepository.GetCrew(forceRefresh)
             .SubscribeOn(_schedulerProvider.ThreadPool)
             .ObserveOn(_schedulerProvider.MainThread)
             .Subscribe(result =>
@@ -109,7 +112,9 @@ public partial class MainPage : Component<MainPageState>
             .CornerRadius(5)
             .HasShadow(false)
             .BackgroundColor(Colors.White)
-        .OnTapped(async () => await NavigateToDetail(crew));
+        .OnTapped(Action);
+
+        async void Action() => await NavigateToDetail(crew);
     }
     
     private async Task NavigateToDetail(CrewModel crewMember)
@@ -127,7 +132,7 @@ public partial class MainPage : Component<MainPageState>
     /*
     private async Task NavigateToDetail(CrewModel crewMember)
     {
-        await shellRef!.GoToAsync<DetailPageProps>(
+        await ShellRef!.GoToAsync<DetailPageProps>(
             "DetailPage",
             props =>
             {

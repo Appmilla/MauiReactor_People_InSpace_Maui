@@ -53,8 +53,8 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IBlobCache>(BlobCache.LocalMachine);
         
-        //builder.Services.AddTransient<MainPage>();
-        //builder.Services.AddTransient<DetailPage>();
+        builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<DetailPage>();
         builder.Services.AddSingleton<ICrewRepository, CrewRepository>();
         builder.Services.AddSingleton<ISchedulerProvider, SchedulerProvider>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();

@@ -1,6 +1,7 @@
 ﻿
 using MauiReactor;
 using MauiReactorPeopleInSpace.Pages;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MauiReactorPeopleInSpace;
 
@@ -25,7 +26,7 @@ class AppShell : Component
                         .AutomationId(MainPageName)
                         .Title(MainPageName)
                         .Route(MainPageName)
-                        .RenderContent(() => new MainPage().Shell(_shell))
+                        .RenderContent(() => Services.GetRequiredService<MainPage>().Shell(_shell))
                 }
                 .AutomationId("MainShell");
 }
