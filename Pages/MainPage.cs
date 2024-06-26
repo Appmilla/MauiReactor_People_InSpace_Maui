@@ -4,6 +4,8 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MauiReactor;
 using MauiReactor.Compatibility;
+using MauiReactorPeopleInSpace.Alerts;
+using MauiReactorPeopleInSpace.Extensions;
 using MauiReactorPeopleInSpace.Models;
 using MauiReactorPeopleInSpace.Navigation;
 using MauiReactorPeopleInSpace.Reactive;
@@ -25,6 +27,7 @@ public partial class MainPage : Component<MainPageState>
     [Inject] private readonly ISchedulerProvider _schedulerProvider;
     [Inject] private readonly ICrewRepository _crewRepository;
     [Inject] private readonly INavigationService _navigationService;
+    [Inject] private readonly IUserAlerts _userAlerts;
     
     [Prop("Shell")] protected MauiControls.Shell? ShellRef;
     
@@ -56,13 +59,31 @@ public partial class MainPage : Component<MainPageState>
                 
                 result.Match(
                     Right: crew => SetState(s => s.Crew = new ObservableCollection<CrewModel>(crew)),
-                    Left: error => ShowError(error.Message));
+                    Left: HandleError);
             });
     }
+    
+    private void HandleError(CrewError error)
+    {
+        switch (error)
+        {
+            case ParsingError parsingError:
+                ShowSnackbar("Parsing error occurred. Please contact customer support or update the app.");
+                break;
+            default:
+                ShowError(error.Message);
+                break;
+        }
+    }
 
+    private void ShowSnackbar(string message)
+    {
+        _userAlerts.ShowSnackbar(message, TimeSpan.FromSeconds(20)).FireAndForgetSafeAsync();
+    }
+    
     private void ShowError(string message)
     {
-        // Implement error handling
+        _userAlerts.ShowToast(message).FireAndForgetSafeAsync();
     }
     
     public override VisualNode Render()
