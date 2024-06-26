@@ -22,9 +22,9 @@ public partial class MainPage : Component<MainPageState>
 {
     private IDisposable? _refreshSubscription;
 
-    [Inject] private ISchedulerProvider _schedulerProvider;
-    [Inject] private ICrewRepository _crewRepository;
-    [Inject] private INavigationService _navigationService;
+    [Inject] private readonly ISchedulerProvider _schedulerProvider;
+    [Inject] private readonly ICrewRepository _crewRepository;
+    [Inject] private readonly INavigationService _navigationService;
     
     [Prop("Shell")] protected MauiControls.Shell? ShellRef;
     
