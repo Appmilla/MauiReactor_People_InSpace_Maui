@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive;
+using System.Threading.Tasks;
 using Akavache;
 using CommunityToolkit.Maui;
 using MauiReactor;
@@ -25,11 +27,6 @@ public static class MauiProgram
     {
         Akavache.Registrations.Start("PeopleInSpace");
 
-        RxApp.DefaultExceptionHandler = new AnonymousObserver<Exception>(ex =>
-        {
-            //App.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
-        });
-        
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiReactorApp<AppShell>(app =>
@@ -62,6 +59,21 @@ public static class MauiProgram
         builder.Services.AddRefitClient<ISpaceXApi>().ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.spacexdata.com/v4"));
         builder.Services.AddSingleton<IConnectivity>(provider => Connectivity.Current);
         builder.Services.AddSingleton<INetworkStatusObserver, NetworkStatusObserver>();
+        
+        RxApp.DefaultExceptionHandler = new AnonymousObserver<Exception>(ex =>
+        {
+            Debug.WriteLine("TaskScheduler unhandled exception: " + ex.Message);
+        });
+        
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            Debug.WriteLine("AppDomain unhandled exception: " + e.ExceptionObject);
+        };
+        
+        TaskScheduler.UnobservedTaskException += (s, e) =>
+        {
+            Debug.WriteLine("TaskScheduler unhandled exception: " + e.Exception.Message);
+        };
         
         return builder.Build();
     }
