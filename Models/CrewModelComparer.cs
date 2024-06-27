@@ -1,8 +1,7 @@
 using System.Linq;
+using System.Collections.Generic;
 
 namespace MauiReactorPeopleInSpace.Models;
-
-using System.Collections.Generic;
 
 public class CrewModelComparer : IEqualityComparer<CrewModel>
 {
