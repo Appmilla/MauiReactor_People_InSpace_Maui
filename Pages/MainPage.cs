@@ -31,12 +31,6 @@ public partial class MainPage : Component<MainPageState>
     
     [Prop("Shell")] protected MauiControls.Shell? ShellRef;
     
-    protected override void OnMounted()
-    {
-        LoadCrew(false);
-        base.OnMounted();
-    }
-    
     protected override void OnWillUnmount()
     {
         base.OnWillUnmount();
@@ -100,11 +94,17 @@ public partial class MainPage : Component<MainPageState>
                 )
                 .OnRefreshing(() => LoadCrew(true))
                 .IsRefreshing(State.IsRefreshing)
-        ).Title(State.PageTitle);
+        ).OnAppearing(OnAppearing).Title(State.PageTitle);
+
+    private void OnAppearing(object? obj, EventArgs eventArgs)
+    {
+        LoadCrew(false);
+    }
+
 
     private VisualNode RenderCrew(CrewModel crew)
     {
-        return new Frame
+        return new Border
             {
                 new Grid("80,50", "160,*")
                     {
@@ -130,10 +130,9 @@ public partial class MainPage : Component<MainPageState>
                     .Padding(20)
             }
             .Padding(10)
-            .CornerRadius(5)
-            .HasShadow(false)
+            .StrokeCornerRadius(5)
             .BackgroundColor(Colors.White)
-        .OnTapped(Action);
+            .OnTapped(Action);
 
         async void Action() => await NavigateToDetail(crew);
     }
