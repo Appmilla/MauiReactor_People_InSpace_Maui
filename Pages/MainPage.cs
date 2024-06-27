@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using DynamicData;
+using DynamicData.Binding;
 using MauiReactor;
-using MauiReactor.Compatibility;
 using MauiReactorPeopleInSpace.Alerts;
 using MauiReactorPeopleInSpace.Extensions;
 using MauiReactorPeopleInSpace.Models;
@@ -16,7 +18,10 @@ namespace MauiReactorPeopleInSpace.Pages;
 public class MainPageState
 {
     public string PageTitle { get; set; } = "People In Space MauiReactor MAUI";
-    public ObservableCollection<CrewModel> Crew { get; set; } = new();
+    public ReadOnlyObservableCollection<CrewModel> Crew { get; set; }
+    public static readonly Func<CrewModel, string> KeySelector = crew => crew.Id;
+    public SourceCache<CrewModel, string> CrewCache = new(KeySelector);
+  
     public bool IsRefreshing { get; set; }
 }
 
@@ -30,6 +35,22 @@ public partial class MainPage : Component<MainPageState>
     [Inject] private readonly IUserAlerts _userAlerts;
     
     [Prop("Shell")] protected MauiControls.Shell? ShellRef;
+    
+    protected override void OnMounted()
+    {
+        base.OnMounted();
+        
+        var crewSort = SortExpressionComparer<CrewModel>.Ascending(c => c.Name);
+
+        var crewSubscription = State.CrewCache.Connect()
+            .Sort(crewSort)
+            .Bind(out var crew)
+            .ObserveOn(_schedulerProvider.MainThread)        
+            .DisposeMany()                              
+            .Subscribe();
+        
+        SetState(s => s.Crew = crew);
+    }
     
     protected override void OnWillUnmount()
     {
@@ -52,9 +73,16 @@ public partial class MainPage : Component<MainPageState>
                 SetState(_ => _.IsRefreshing = false);
                 
                 result.Match(
-                    Right: crew => SetState(s => s.Crew = new ObservableCollection<CrewModel>(crew)),
+                    Right: UpdateCrew,
                     Left: HandleError);
             });
+    }
+    
+    private static readonly CrewModelComparer CrewComparer = new();
+
+    private void UpdateCrew(IReadOnlyList<CrewModel> crew)
+    {
+        SetState(s => s.CrewCache.Edit(cache => cache.AddOrUpdate(crew, CrewComparer)), false);
     }
     
     private void HandleError(CrewError error)

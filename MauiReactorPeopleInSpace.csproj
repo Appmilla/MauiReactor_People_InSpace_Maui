@@ -79,9 +79,7 @@
     <ItemGroup>
       <Folder Include="Alerts\" />
       <Folder Include="Apis\" />
-      <Folder Include="Extensions\" />
       <Folder Include="Functional\" />
-      <Folder Include="Models\" />
       <Folder Include="Navigation\" />
       <Folder Include="Reactive\" />
       <Folder Include="Repositories\" />
